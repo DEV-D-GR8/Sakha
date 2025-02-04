@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION   = credentials('AWS_REGION')
+        ECR_REPO     = credentials('ECR_REPO')
+        IMAGE_TAG    = "${env.BUILD_NUMBER}"
+        AWS_ACCOUNT  = credentials('AWS_ACCOUNT_ID')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Login to ECR
+                    withCredentials([usernamePassword(credentialsId: 'AWS_CREDENTIALS', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh '''
+                            aws ecr get-login-password --region $AWS_REGION | \
+                            docker login --username AWS --password-stdin $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com
+                        '''
+                    }
+                    // Build Docker image
+                    sh "docker build -t $ECR_REPO:$IMAGE_TAG ."
+                }
+            }
+        }
+        stage('Push Docker Image to ECR') {
+            steps {
+                script {
+                    def ecrUrl = "$AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO"
+                    sh "docker tag $ECR_REPO:$IMAGE_TAG $ecrUrl:$IMAGE_TAG"
+                    sh "docker push $ecrUrl:$IMAGE_TAG"
+                }
+            }
+        }
+        stage('Terraform Init and Plan') {
+            steps {
+                dir('terraform') {
+                    withCredentials([string(credentialsId: 'TF_VAR_SECRET', variable: 'TF_VAR_SECRET')]) {
+                        sh 'terraform init'
+                        sh 'terraform plan -out=tfplan'
+                    }
+                }
+            }
+        }
+        stage('Terraform Apply') {
+            steps {
+                dir('terraform') {
+                    withCredentials([string(credentialsId: 'TF_VAR_SECRET', variable: 'TF_VAR_SECRET')]) {
+                        sh 'terraform apply -auto-approve tfplan'
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}

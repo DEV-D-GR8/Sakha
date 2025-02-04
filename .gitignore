@@ -46,3 +46,50 @@ GoogleService-Info.plist
 .env
 .DS_Store
 
+# Python/Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+.env
+*.log
+*.pot
+*.pyc
+venv/
+.envrc
+migrations/
+*.sqlite3
+
+# Virtual Environment
+*.venv
+.venv/
+venv/
+ENV/
+env/
+
+# Django Secret Key & Configurations
+*.secrets
+secrets.json
+.env
+
+# Docker
+*.dockerignore
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+
+# Jenkins
+*.jenkinsfile
+jenkins_output.log
+
+# Logs & Temporary Files
+logs/
+*.log
+*.out
+*.err
+*.pid
+tmp/

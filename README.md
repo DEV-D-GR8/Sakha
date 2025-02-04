@@ -13,7 +13,7 @@ Sakha integrates multiple technologies, including **Django, OpenAI GPT-4o, Langc
 - **Database:** PostgreSQL (RDS), MongoDB
 - **Cache:** Redis (ElastiCache)
 - **Authentication:** Firebase
-- **Cloud Infrastructure:** AWS (ECS Fargate, API Gateway, CloudFront)
+- **Cloud Infrastructure:** AWS (ECS Fargate, API Gateway)
 - **CI/CD:** Jenkins, Terraform
 
 ### **Frontend**
